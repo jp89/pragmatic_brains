@@ -9,17 +9,17 @@ def run(address, port, username, delay):
         try:
             client_common.register_user(sck, username, delay, address, port)
         except Exception as e:
-            print('Client failed to connect. Reason: {}', str(e))
+            print('Client failed to connect. Reason: {}', str(e), flush=True)
             exit(1)
 
-        print("Running UDP client - subscriber!")
+        print("Running UDP client - subscriber!", flush=True)
         while True:
             try:
                 msg, ignored = sck.recvfrom(1024)
                 msg_decoded = pickle.loads(msg)
-                print(msg_decoded.payload)
+                print(msg_decoded.payload, flush=True)
             except ConnectionError as e:
-                print('Server unavailable.')
+                print('Server unavailable.', flush=True)
 
 
 def main(cmd_args):

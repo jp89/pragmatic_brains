@@ -1,7 +1,7 @@
 class User:
-    def __init__(self, username, current_index, delay=0):
+    def __init__(self, username, messages_sent, delay=0):
         self.__username = username
-        self.__current_index = current_index
+        self.__messages_sent = messages_sent
         self.__delay = delay
 
     @property
@@ -9,12 +9,12 @@ class User:
         return self.__username
 
     @property
-    def current_index(self):
-        return self.__current_index
+    def messages_sent(self):
+        return self.__messages_sent
 
-    @current_index.setter
-    def current_index(self, value):
-        self.__current_index = value
+    @messages_sent.setter
+    def messages_sent(self, value):
+        self.__messages_sent = value
 
     @property
     def delay(self):

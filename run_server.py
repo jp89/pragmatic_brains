@@ -10,7 +10,7 @@ def display_banner():
     \____/____/_/    /___/\__/_/  |___/\__/_/
     
     """
-    print(banner)
+    print(banner, flush=True)
 
 
 def main(args):

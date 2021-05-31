@@ -21,7 +21,7 @@ class Server:
         self.__data = []
 
     def run(self):
-        print('Starting UDP server on port ' + str(self.__port))
+        print('Starting UDP server on port ' + str(self.__port), flush=True)
         while True:
             self.read_from_socket()
             self.write_to_socket()
@@ -45,12 +45,8 @@ class Server:
     def handle_new_user(self, address, msg):
         new_message = pickle.loads(msg)
         if new_message.type == RequestType.NEW_USER:
-            if len(self.__data) == 0:
-                current_data_index = 0
-            else:
-                current_data_index = len(self.__data) - 1
             self.__users[address] = server.user.User(username=new_message.username, delay=int(new_message.delay),
-                                                     current_index=current_data_index)
+                                                     messages_sent=0)
             response = common.messages.Response('Success')
             self.__server_socket.sendto(pickle.dumps(response), address)
         else:
@@ -64,9 +60,10 @@ class Server:
     def write_to_socket(self):
         try:
             for address, usr in self.__users.items():
-                if len(self.__data) - usr.current_index >= usr.delay:
-                    response = common.messages.Response('\n'.join(self.__data[usr.current_index:]))
+                delta = len(self.__data) - usr.messages_sent
+                if delta >= usr.delay:
+                    response = common.messages.Response('\n'.join(self.__data[delta * (-1):]))
                     self.__server_socket.sendto(pickle.dumps(response), address)
-                    usr.current_index = len(self.__data) - 1
+                    usr.messages_sent = usr.messages_sent + delta
         except Exception as e:
             print(e)

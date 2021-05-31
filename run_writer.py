@@ -11,17 +11,17 @@ def run(address, port, username, delay):
         try:
             client_common.register_user(sck, username, delay, address, port)
         except Exception as e:
-            print('Client failed to connect. Reason: {}', str(e))
+            print('Client failed to connect. Reason: {}', str(e), flush=True)
             exit(1)
 
-        print("Running UDP client - sender!")
+        print("Running UDP client - sender!", flush=True)
         while True:
             sentence = input("What would you like to say? ")
             msg = Request(msg_type=RequestType.SENTENCE, username=username, payload=sentence)
             try:
                 sck.sendto(pickle.dumps(msg), (address, port))
             except ConnectionError as e:
-                print('Server unavailable.')
+                print('Server unavailable.', flush=True)
 
 
 def main(cmd_args):

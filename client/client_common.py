@@ -26,7 +26,7 @@ def display_banner():
     \____/____/_/     \__/_/_/\__/_//_/\__/ 
 
     """
-    print(banner)
+    print(banner, flush=True)
 
 
 def register_user(sck, username, delay, address, port):
