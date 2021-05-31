@@ -1,5 +1,5 @@
 import argparse
-import server
+from server.server import Server
 
 
 def display_banner():
@@ -15,7 +15,7 @@ def display_banner():
 
 def main(args):
     display_banner()
-    s = server.Server(args.port)
+    s = Server(args.port)
     s.run()
 
 

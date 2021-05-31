@@ -6,7 +6,7 @@ import sys
 from common.messages import Request, RequestType
 
 sys.path.append(os.path.join('..', 'server'))
-import server
+from server.server import Server
 
 # Test constants
 SERVER_PORT = 12345
@@ -26,7 +26,7 @@ def test_server_starts_properly():
 
     # Given
     # When
-    s = server.Server(SERVER_PORT)
+    s = Server(SERVER_PORT)
     # Then
     assert s
 
@@ -35,9 +35,9 @@ def test_server_throws_if_port_already_taken():
     """Check server throws exception if specified port is already taken."""
     # Given
     # When
-    s1 = server.Server(SERVER_PORT)
+    s1 = Server(SERVER_PORT)
     try:
-        s2 = server.Server(SERVER_PORT)
+        s2 = Server(SERVER_PORT)
     except OSError as e:
         # Then
         assert "Only one usage of each socket address (protocol/network address/port) is normally permitted" in str(e)
@@ -46,7 +46,7 @@ def test_server_throws_if_port_already_taken():
 def test_server_new_user():
     """New user connects to server."""
     # Given
-    srv = server.Server(SERVER_PORT)
+    srv = Server(SERVER_PORT)
     # When
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.connect(SERVER_ADDRESS)
@@ -64,7 +64,7 @@ def test_server_new_user():
 def test_server_unknown_user():
     """Users sends data to server without registering first."""
     # Given
-    srv = server.Server(SERVER_PORT)
+    srv = Server(SERVER_PORT)
     # When
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.connect(SERVER_ADDRESS)
@@ -83,7 +83,7 @@ def test_server_unknown_user():
 def test_user_sends_new_sentence():
     """Registered user sends new sentence."""
     # Given
-    srv = server.Server(SERVER_PORT)
+    srv = Server(SERVER_PORT)
     # When
 
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -108,7 +108,7 @@ def test_user_sends_new_sentence():
 def test_server_writes_successfully():
     """Check server sends data correctly"""
     # Given
-    srv = server.Server(SERVER_PORT)
+    srv = Server(SERVER_PORT)
     # When
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.connect(SERVER_ADDRESS)
@@ -134,7 +134,7 @@ def test_server_writes_successfully():
 def test_server_receives_data_from_multiple_users():
     """A couple of registered user send new data."""
     # Given
-    srv = server.Server(SERVER_PORT)
+    srv = Server(SERVER_PORT)
     # When
     sck1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck1.connect(SERVER_ADDRESS)
@@ -177,7 +177,7 @@ def test_server_receives_data_from_multiple_users():
 def test_users_delay():
     """Registered user with non zero delay sends a couple of sentences (more than N), receives only one message."""
     # Given
-    srv = server.Server(SERVER_PORT)
+    srv = Server(SERVER_PORT)
     # When
 
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

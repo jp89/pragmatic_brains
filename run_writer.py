@@ -1,6 +1,6 @@
 import pickle
 
-import client_common
+from client import client_common
 import socket
 
 from common.messages import Request, RequestType

@@ -1,6 +1,6 @@
 import pickle
 import socket
-import user
+import server.user
 import common
 from common.messages import RequestType
 
@@ -49,8 +49,8 @@ class Server:
                 current_data_index = 0
             else:
                 current_data_index = len(self.__data) - 1
-            self.__users[address] = user.User(username=new_message.username, delay=int(new_message.delay),
-                                              current_index=current_data_index)
+            self.__users[address] = server.user.User(username=new_message.username, delay=int(new_message.delay),
+                                                     current_index=current_data_index)
             response = common.messages.Response('Success')
             self.__server_socket.sendto(pickle.dumps(response), address)
         else:
