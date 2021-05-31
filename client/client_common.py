@@ -2,7 +2,7 @@ import argparse
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='UDP Server. Connected users may send sentences to each other.')
+    parser = argparse.ArgumentParser(description='Udp server client.')
     parser.add_argument('--address', type=str, default='localhost',
                         help='UDP server IP address.')
     parser.add_argument('--port', type=int, default=12345,
