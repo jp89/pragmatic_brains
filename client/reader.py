@@ -1,3 +1,5 @@
+import pickle
+
 import client_common
 import socket
 
@@ -14,7 +16,8 @@ def run(address, port, username, delay):
         while True:
             try:
                 msg, ignored = sck.recvfrom(1024)
-                print(msg.decode())
+                msg_decoded = pickle.loads(msg)
+                print(msg_decoded.payload)
             except ConnectionError as e:
                 print('Server unavailable.')
 

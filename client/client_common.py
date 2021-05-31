@@ -1,4 +1,7 @@
 import argparse
+import pickle
+
+from common.messages import Request, RequestType
 
 
 def parse_args():
@@ -9,8 +12,8 @@ def parse_args():
                         help='UDP server port. ')
     parser.add_argument('--username', required=True, type=str, help='Every sentence sent to the server from this'
                                                                     'process will be prepended with username.')
-    parser.add_argument('--delay', type=int, default=0, help='Receive sentences from server in packages of at least N'
-                                                             ' sentences. Default value - zero - means server will send'
+    parser.add_argument('--delay', type=int, default=1, help='Receive sentences from server in packages of at least N'
+                                                             ' sentences. Default value - one - means server will send'
                                                              ' sentences without any delay.')
     return parser.parse_args()
 
@@ -28,9 +31,11 @@ def display_banner():
 
 def register_user(sck, username, delay, address, port):
     try:
-        sck.sendto('NewUser:{},N:{}'.format(username, delay).encode(), (address, port))
+        msg = Request(msg_type=RequestType.NEW_USER, username=username, delay=delay)
+        sck.sendto(pickle.dumps(msg), (address, port))
         response, ignored = sck.recvfrom(1024)
-        if response.decode() != 'Success':
+        response_decoded = pickle.loads(response)
+        if response_decoded.payload != 'Success':
             raise RuntimeError('Failed to register user, reason: {}'.format(response.decode()))
     except ConnectionError as e:
         raise RuntimeError('Server unavailable. Make sure it is running.')

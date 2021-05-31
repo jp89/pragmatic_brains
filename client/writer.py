@@ -1,5 +1,9 @@
+import pickle
+
 import client_common
 import socket
+
+from common.messages import Request, RequestType
 
 
 def run(address, port, username, delay):
@@ -13,8 +17,9 @@ def run(address, port, username, delay):
         print("Running UDP client - sender!")
         while True:
             sentence = input("What would you like to say? ")
+            msg = Request(msg_type=RequestType.SENTENCE, username=username, payload=sentence)
             try:
-                sck.sendto(sentence.encode(), (address, port))
+                sck.sendto(pickle.dumps(msg), (address, port))
             except ConnectionError as e:
                 print('Server unavailable.')
 

@@ -1,18 +1,16 @@
 import os
+import pickle
 import socket
-import unittest
 import sys
+
+from common.messages import Request, RequestType
+
 sys.path.append(os.path.join('..', 'server'))
 import server
 
 # Test constants
 SERVER_PORT = 12345
 BUFF_SIZE = 1024
-NEW_USER_MSGS = [
-    'NewUser:tomek,N:0',
-    'NewUser:jarek,N:5',
-    'NewUser:james,N:7'
-    ]
 SENTENCES = [
     'This is first test sentence',
     'This is second test sentence',
@@ -52,14 +50,15 @@ def test_server_new_user():
     # When
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.connect(SERVER_ADDRESS)
-    sck.send(NEW_USER_MSGS[0].encode())
+    new_user_msg = Request(msg_type=RequestType.NEW_USER, username='jarek')
+    sck.send(pickle.dumps(new_user_msg))
     srv.read_from_socket()
-    response = sck.recvfrom(BUFF_SIZE)
+    response, ignored = sck.recvfrom(BUFF_SIZE)
+    response_decoded = pickle.loads(response)
     # Then
-    assert response[0].decode() == 'Success'
+    assert response_decoded.payload == 'Success'
     assert len(srv._Server__users) == 1
-    assert len(srv._Server__output_buffer) == 0
-    assert srv._Server__current_index == 0
+    assert len(srv._Server__data) == 0
 
 
 def test_server_unknown_user():
@@ -69,14 +68,16 @@ def test_server_unknown_user():
     # When
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.connect(SERVER_ADDRESS)
-    sck.send(SENTENCES[1].encode())
+    sck.send(
+        pickle.dumps(Request(msg_type=RequestType.SENTENCE, username='jarek', payload=SENTENCES[0]))
+    )
     srv.read_from_socket()
-    response = sck.recvfrom(BUFF_SIZE)
+    response, ignored = sck.recvfrom(BUFF_SIZE)
+    response_decoded = pickle.loads(response)
     # Then
-    assert response[0].decode().startswith("Error! Address")
+    assert response_decoded.payload.startswith("Error! Address")
     assert len(srv._Server__users) == 0
-    assert len(srv._Server__output_buffer) == 0
-    assert srv._Server__current_index == 0
+    assert len(srv._Server__data) == 0
 
 
 def test_user_sends_new_sentence():
@@ -87,63 +88,47 @@ def test_user_sends_new_sentence():
 
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.connect(SERVER_ADDRESS)
-    sck.send(NEW_USER_MSGS[0].encode())
+    new_user_msg = Request(msg_type=RequestType.NEW_USER, username='jarek')
+    sck.send(pickle.dumps(new_user_msg))
     srv.read_from_socket()
-    response = sck.recvfrom(BUFF_SIZE)
+    response, ignored = sck.recvfrom(BUFF_SIZE)
+    response_decoded = pickle.loads(response)
 
-    sck.send(SENTENCES[1].encode())
-    srv.read_from_socket()
-
-    # Then
-    assert response[0].decode() == 'Success'
-    assert len(srv._Server__users) == 1
-    assert len(srv._Server__output_buffer) == 1
-    assert srv._Server__current_index == 1
-
-
-def test_one_user_sends_multiple_sentences():
-    """Registered user sends multiple sentences, check if output buffer grows accordingly"""
-    # Given
-    srv = server.Server(SERVER_PORT)
-    # When
-    sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sck.connect(SERVER_ADDRESS)
-    sck.send(SENTENCES[0].encode())
-    srv.read_from_socket()
-    response = sck.recvfrom(BUFF_SIZE)
-
-    sck.send(SENTENCES[1].encode())
+    sck.send(
+        pickle.dumps(Request(msg_type=RequestType.SENTENCE, username='jarek', payload=SENTENCES[0]))
+    )
     srv.read_from_socket()
 
     # Then
-    assert response[0].decode() == 'Ack'
+    assert response_decoded.payload == 'Success'
     assert len(srv._Server__users) == 1
-    assert len(srv._Server__output_buffer) == 1
-    assert srv._Server__current_index == 1
+    assert len(srv._Server__data) == 1
 
 
 def test_server_writes_successfully():
-    """Registered user sends multiple sentences, check if output buffer grows accordingly"""
+    """Check server sends data correctly"""
     # Given
     srv = server.Server(SERVER_PORT)
     # When
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.connect(SERVER_ADDRESS)
-    sck.send(NEW_USER_MSGS[0].encode())
+    new_user_msg = Request(msg_type=RequestType.NEW_USER, username='jarek')
+    sck.send(pickle.dumps(new_user_msg))
     srv.read_from_socket()
-    response = sck.recvfrom(BUFF_SIZE)
-
-    sck.send(SENTENCES[1].encode())
+    response, ignored = sck.recvfrom(BUFF_SIZE)
+    response_decoded = pickle.loads(response)
+    sck.send(
+        pickle.dumps(Request(msg_type=RequestType.SENTENCE, username='jarek', payload=SENTENCES[0]))
+    )
     srv.read_from_socket()
     srv.write_to_socket()
-    response2 = sck.recvfrom(BUFF_SIZE)
-
+    response2, ignored = sck.recvfrom(BUFF_SIZE)
+    response2_decoded = pickle.loads(response2)
     # Then
-    assert response[0].decode() == 'Success'
+    assert response_decoded.payload == 'Success'
     assert len(srv._Server__users) == 1
-    assert len(srv._Server__output_buffer) == 1
-    assert srv._Server__current_index == 1
-    assert SENTENCES[1] in response2[0].decode()
+    assert len(srv._Server__data) == 1
+    assert SENTENCES[0] in response2_decoded.payload
 
 
 def test_server_receives_data_from_multiple_users():
@@ -151,40 +136,42 @@ def test_server_receives_data_from_multiple_users():
     # Given
     srv = server.Server(SERVER_PORT)
     # When
-
     sck1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck1.connect(SERVER_ADDRESS)
-    sck1.send(NEW_USER_MSGS[0].encode())
+    new_user_msg1 = Request(msg_type=RequestType.NEW_USER, username='jarek')
+    sck1.send(pickle.dumps(new_user_msg1))
     srv.read_from_socket()
-    response1 = sck1.recvfrom(BUFF_SIZE)
+    response1, ignored = sck1.recvfrom(BUFF_SIZE)
+    response1_decoded = pickle.loads(response1)
 
     sck2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck2.connect(SERVER_ADDRESS)
-    sck2.send(NEW_USER_MSGS[1].encode())
+    new_user_msg1 = Request(msg_type=RequestType.NEW_USER, username='tomek')
+    sck2.send(pickle.dumps(new_user_msg1))
     srv.read_from_socket()
-    response2 = sck2.recvfrom(BUFF_SIZE)
+    response2, ignored = sck2.recvfrom(BUFF_SIZE)
+    response2_decoded = pickle.loads(response2)
 
     sck3 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck3.connect(SERVER_ADDRESS)
-    sck3.send(NEW_USER_MSGS[2].encode())
+    new_user_msg1 = Request(msg_type=RequestType.NEW_USER, username='james')
+    sck3.send(pickle.dumps(new_user_msg1))
     srv.read_from_socket()
-    response3 = sck3.recvfrom(BUFF_SIZE)
+    response3, ignored = sck3.recvfrom(BUFF_SIZE)
+    response3_decoded = pickle.loads(response2)
 
     for sentence in SENTENCES:
-        sck1.send(sentence.encode())
-        srv.read_from_socket()
-        sck2.send(sentence.encode())
-        srv.read_from_socket()
-        sck3.send(sentence.encode())
-        srv.read_from_socket()
+        for user, sck in zip(['jarek', 'tomek', 'james'], [sck1, sck2, sck3]):
+            msg = Request(msg_type=RequestType.SENTENCE, username=user, payload=sentence)
+            sck.send(pickle.dumps(msg))
+            srv.read_from_socket()
 
     # Then
-    assert response1[0].decode() == 'Success'
-    assert response2[0].decode() == 'Success'
-    assert response3[0].decode() == 'Success'
+    assert response1_decoded.payload == 'Success'
+    assert response2_decoded.payload == 'Success'
+    assert response3_decoded.payload == 'Success'
     assert len(srv._Server__users) == 3
-    assert len(srv._Server__output_buffer) == len(SENTENCES) * 3
-    assert srv._Server__current_index == len(SENTENCES) * 3
+    assert len(srv._Server__data) == len(SENTENCES) * 3
 
 
 def test_users_delay():
@@ -195,30 +182,34 @@ def test_users_delay():
 
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.connect(SERVER_ADDRESS)
-    sck.send(NEW_USER_MSGS[0].encode())
+    new_user_msg = Request(msg_type=RequestType.NEW_USER, username='jarek')
+    sck.send(pickle.dumps(new_user_msg))
     srv.read_from_socket()
-    response = sck.recvfrom(BUFF_SIZE)
+    response, ignored = sck.recvfrom(BUFF_SIZE)
+    response_decoded = pickle.loads(response)
 
     for snt in SENTENCES:
-        sck.send(snt.encode())
+        msg = Request(msg_type=RequestType.SENTENCE, username='jarek', payload=snt)
+        sck.send(pickle.dumps(msg))
         srv.read_from_socket()
+
     srv.write_to_socket()
-    reponse2, adr = sck.recvfrom(BUFF_SIZE)
+    response2, adr = sck.recvfrom(BUFF_SIZE)
+    response2_decoded = pickle.loads(response2)
 
     # Then
-    assert response[0].decode() == 'Success'
+    assert response_decoded.payload == 'Success'
     assert len(srv._Server__users) == 1
-    assert len(srv._Server__output_buffer) == len(SENTENCES)
-    decoded_response = reponse2.decode()
+    assert len(srv._Server__data) == len(SENTENCES)
     for snt in SENTENCES:
-        assert snt in decoded_response
+        assert snt in response2_decoded.payload
 
 
-# test_server_starts_properly()
-# test_server_throws_if_port_already_taken()
-# test_server_new_user()
-# test_user_sends_new_sentence()
-# test_server_unknown_user()
-# test_server_writes_successfully()
-# test_server_receives_data_from_multiple_users()
+test_server_starts_properly()
+test_server_throws_if_port_already_taken()
+test_server_new_user()
+test_user_sends_new_sentence()
+test_server_unknown_user()
+test_server_writes_successfully()
+test_server_receives_data_from_multiple_users()
 test_users_delay()
