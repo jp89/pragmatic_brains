@@ -3,6 +3,7 @@ from server.server import Server
 
 
 def display_banner():
+    """Displays ASCII art banner."""
     banner = """
       __  _____  ___
      / / / / _ \/ _ \  ___ ___ _____  _____ ____
@@ -13,13 +14,15 @@ def display_banner():
     print(banner, flush=True)
 
 
-def main(args):
+def main(cmd_args):
     display_banner()
-    s = Server(args.port)
+    s = Server(cmd_args.port)
     s.run()
 
 
 def parse_args():
+    """Parse command line arguments."""
+
     parser = argparse.ArgumentParser(description='UDP Server. Connected users may send sentences to each other.')
     parser.add_argument('--port', type=int, default=12345,
                         help='Port used by UDP server. Clients should connect to that port.')

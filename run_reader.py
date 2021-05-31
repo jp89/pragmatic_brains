@@ -5,6 +5,11 @@ import socket
 
 
 def run(address, port, username, delay):
+    """Receives messages from server and prints them to stdout."""
+
+    """
+    Receiving messages from socket is blocking.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sck:
         try:
             client_common.register_user(sck, username, delay, address, port)

@@ -52,7 +52,7 @@ def test_server_new_user():
     sck.connect(SERVER_ADDRESS)
     new_user_msg = Request(msg_type=RequestType.NEW_USER, username='jarek')
     sck.send(pickle.dumps(new_user_msg))
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
     response, ignored = sck.recvfrom(BUFF_SIZE)
     response_decoded = pickle.loads(response)
     # Then
@@ -71,7 +71,7 @@ def test_server_unknown_user():
     sck.send(
         pickle.dumps(Request(msg_type=RequestType.SENTENCE, username='jarek', payload=SENTENCES[0]))
     )
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
     response, ignored = sck.recvfrom(BUFF_SIZE)
     response_decoded = pickle.loads(response)
     # Then
@@ -90,14 +90,14 @@ def test_user_sends_new_sentence():
     sck.connect(SERVER_ADDRESS)
     new_user_msg = Request(msg_type=RequestType.NEW_USER, username='jarek')
     sck.send(pickle.dumps(new_user_msg))
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
     response, ignored = sck.recvfrom(BUFF_SIZE)
     response_decoded = pickle.loads(response)
 
     sck.send(
         pickle.dumps(Request(msg_type=RequestType.SENTENCE, username='jarek', payload=SENTENCES[0]))
     )
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
 
     # Then
     assert response_decoded.payload == 'Success'
@@ -114,14 +114,14 @@ def test_server_writes_successfully():
     sck.connect(SERVER_ADDRESS)
     new_user_msg = Request(msg_type=RequestType.NEW_USER, username='jarek')
     sck.send(pickle.dumps(new_user_msg))
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
     response, ignored = sck.recvfrom(BUFF_SIZE)
     response_decoded = pickle.loads(response)
     sck.send(
         pickle.dumps(Request(msg_type=RequestType.SENTENCE, username='jarek', payload=SENTENCES[0]))
     )
-    srv.read_from_socket()
-    srv.write_to_socket()
+    srv.maybe_read_from_socket()
+    srv.maybe_write_to_socket()
     response2, ignored = sck.recvfrom(BUFF_SIZE)
     response2_decoded = pickle.loads(response2)
     # Then
@@ -140,7 +140,7 @@ def test_server_receives_data_from_multiple_users():
     sck1.connect(SERVER_ADDRESS)
     new_user_msg1 = Request(msg_type=RequestType.NEW_USER, username='jarek')
     sck1.send(pickle.dumps(new_user_msg1))
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
     response1, ignored = sck1.recvfrom(BUFF_SIZE)
     response1_decoded = pickle.loads(response1)
 
@@ -148,7 +148,7 @@ def test_server_receives_data_from_multiple_users():
     sck2.connect(SERVER_ADDRESS)
     new_user_msg1 = Request(msg_type=RequestType.NEW_USER, username='tomek')
     sck2.send(pickle.dumps(new_user_msg1))
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
     response2, ignored = sck2.recvfrom(BUFF_SIZE)
     response2_decoded = pickle.loads(response2)
 
@@ -156,7 +156,7 @@ def test_server_receives_data_from_multiple_users():
     sck3.connect(SERVER_ADDRESS)
     new_user_msg1 = Request(msg_type=RequestType.NEW_USER, username='james')
     sck3.send(pickle.dumps(new_user_msg1))
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
     response3, ignored = sck3.recvfrom(BUFF_SIZE)
     response3_decoded = pickle.loads(response2)
 
@@ -164,7 +164,7 @@ def test_server_receives_data_from_multiple_users():
         for user, sck in zip(['jarek', 'tomek', 'james'], [sck1, sck2, sck3]):
             msg = Request(msg_type=RequestType.SENTENCE, username=user, payload=sentence)
             sck.send(pickle.dumps(msg))
-            srv.read_from_socket()
+            srv.maybe_read_from_socket()
 
     # Then
     assert response1_decoded.payload == 'Success'
@@ -184,16 +184,16 @@ def test_users_delay():
     sck.connect(SERVER_ADDRESS)
     new_user_msg = Request(msg_type=RequestType.NEW_USER, username='jarek')
     sck.send(pickle.dumps(new_user_msg))
-    srv.read_from_socket()
+    srv.maybe_read_from_socket()
     response, ignored = sck.recvfrom(BUFF_SIZE)
     response_decoded = pickle.loads(response)
 
     for snt in SENTENCES:
         msg = Request(msg_type=RequestType.SENTENCE, username='jarek', payload=snt)
         sck.send(pickle.dumps(msg))
-        srv.read_from_socket()
+        srv.maybe_read_from_socket()
 
-    srv.write_to_socket()
+    srv.maybe_write_to_socket()
     response2, adr = sck.recvfrom(BUFF_SIZE)
     response2_decoded = pickle.loads(response2)
 

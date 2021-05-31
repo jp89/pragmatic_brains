@@ -1,4 +1,6 @@
 class User:
+    """Represents user that connected to the server, stores user's defined delay and number of messages sent so far."""
+
     def __init__(self, username, messages_sent, delay=0):
         self.__username = username
         self.__messages_sent = messages_sent

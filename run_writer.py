@@ -7,6 +7,11 @@ from common.messages import Request, RequestType
 
 
 def run(address, port, username, delay):
+    """Reads user's input from stdin, wraps it in a message and sends over socket to the server."""
+
+    """
+    Reading from stdin and sending data is blocking.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sck:
         try:
             client_common.register_user(sck, username, delay, address, port)

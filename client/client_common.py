@@ -5,6 +5,8 @@ from common.messages import Request, RequestType
 
 
 def parse_args():
+    """Parses commandline arguments."""
+
     parser = argparse.ArgumentParser(description='Udp server client.')
     parser.add_argument('--address', type=str, default='localhost',
                         help='UDP server IP address.')
@@ -19,6 +21,8 @@ def parse_args():
 
 
 def display_banner():
+    """Displays ASCII art banner."""
+
     banner = """
       __  _____  ___        ___          __ 
      / / / / _ \/ _ \  ____/ (_)__ ___  / /_
@@ -30,6 +34,8 @@ def display_banner():
 
 
 def register_user(sck, username, delay, address, port):
+    """Registers new user with UDP server. Throws exception if registration fails or remote socket closes."""
+
     try:
         msg = Request(msg_type=RequestType.NEW_USER, username=username, delay=delay)
         sck.sendto(pickle.dumps(msg), (address, port))
