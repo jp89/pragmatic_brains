@@ -9,7 +9,7 @@ class Server:
     """Chat-like server acting as a middle men between writers and subscribers."""
 
     """
-    See readme.md for implementation details, limitations and design choices.
+    See README.MD for implementation details, limitations and design choices.
     """
 
     BUF_SIZE = 1024  # max size of a single packet sent over udp socket
