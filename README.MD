@@ -49,7 +49,7 @@ I haven't been able to test it on Linux or MacOS.
 
 ### UDP
 UDP does not guarantee that packets are received by the other side.
-I haven't implemented any mechanism for retrying / ensuring they are received as this would require
+I decided not to implement any mechanism for retrying / ensuring they are received as this would require
 substantial amount of work.
 
 ### Server architecture
@@ -59,7 +59,7 @@ perhaps only the newest data should be cached in server's memory.
 The same goes for storing clients metadata.
 
 ### Client architecture
-Unfortunately I haven't been able to come up with a fairly simple solution to implement a client program
+Unfortunately I haven't been able to come up with a fairly simple implementation of a client 
 capable of both reading and writing messages.
 It is possible to read from stdin and socket without blocking with select().
 However, select() does not support stdin on Windows (only sockets).
