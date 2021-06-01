@@ -34,7 +34,7 @@ User should type text followed by new line in order to send a message.
 
 Please see demo.mp4 for demonstration usage.
 
-## How it works ?
+## How does it work ?
 
 Server creates a UDP socket and accepts data from users.
 Each new user send a registration request first.
@@ -51,6 +51,12 @@ I haven't been able to test it on Linux or MacOS.
 UDP does not guarantee that packets are received by the other side.
 I haven't implemented any mechanism for retrying / ensuring they are received as this would require
 substantial amount of work.
+
+### Server architecture
+Server stores all incoming messages in one list which grows as users send more data.
+In real-life application that data should be stored in some sort of database, 
+perhaps only the newest data should be cached in server's memory.
+The same goes for storing clients metadata.
 
 ### Client architecture
 Unfortunately I haven't been able to come up with a fairly simple solution to implement a client program
