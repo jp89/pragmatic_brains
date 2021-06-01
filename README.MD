@@ -32,7 +32,7 @@ Username is mandatory.
 Writer blocks on reading from stdin. 
 User should type text followed by new line in order to send a message.
 
-Please see demo.mp4 for demonstration usage.
+Please see [demo](demo.mp4) for usage demonstration.
 
 ## How does it work ?
 
