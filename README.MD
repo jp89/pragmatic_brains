@@ -49,8 +49,9 @@ I haven't been able to test it on Linux or MacOS.
 
 ### UDP
 UDP does not guarantee that packets are received by the other side.
-I decided not to implement any mechanism for retrying / ensuring they are received as this would require
-substantial amount of work.
+Implementing a robust mechanism for ensuring packets were received and retrying if they were not
+would require a substantial amount of work in my opinion, however I can go ahead and code that
+if it's a requirement.
 
 ### Server architecture
 Server stores all incoming messages in one list which grows as users send more data.
